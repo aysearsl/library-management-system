@@ -1,0 +1,116 @@
+class Library:
+    def __init__(self, file_path='books.txt', encoding='utf-8'):
+        self.file_path = file_path
+        self.file = open(self.file_path, 'a+', encoding=encoding)
+
+    def __del__(self):
+        self.file.close()
+
+    def is_valid_number(self,input_string):
+        return (input_string.isdigit()) or (input_string.lower() == "n.d.")
+
+
+    def list_books(self):
+        self.file.seek(0)
+        books = self.file.read().splitlines()
+        books=sorted(books)
+
+        if not books:
+            print("No books in the list. Try add more books.")
+
+        for book in books:
+            if not book.strip():  # Check if the line is empty or contains only whitespaces
+                continue
+            title, author, year, pages = book.split(',')
+            print(f"Title: {title}, Author: {author}, Release Year: {year}, Pages: {pages}")
+
+
+    def add_book(self):
+        # user inputs are asked
+        title_random = input("Enter the title: ")
+        title=title_random.title()
+        author_temp = input("Enter the author: ")
+        author=author_temp.title()
+        year = input("Enter the release year (if release year is not known, enter n.d.): ")
+        pages = input("Enter the number of pages: ")
+
+        # check whether if the year or page is number
+        if self.is_valid_number(year) and self.is_valid_number(pages):
+
+            new_book_info = f"{title},{author},{year},{pages}"
+
+            self.file.seek(0)
+            books = self.file.read().splitlines()
+
+            # To sort the titles of books alphabetically
+            index_to_insert = 0
+            while index_to_insert < len(books) and title.lower() > books[index_to_insert].split(',')[0].lower():
+                index_to_insert += 1
+
+            books.insert(index_to_insert, new_book_info)
+            books=sorted(books)
+            with open(self.file_path, 'w', encoding='utf-8') as file:
+                file.writelines('\n'.join(books))
+                print("Book is added successfully!")
+
+        else:
+            print("Invalid release year or page number")
+
+
+
+
+    def remove_book(self):
+        self.file.seek(0)
+        books = self.file.read().splitlines()
+
+        if not books:
+            print("There is no book in the list to remove!")
+            return
+
+        title_to_remove_temp = input("Enter the title of the book to remove: ")
+        title_to_remove = title_to_remove_temp.title()
+
+        found_book = False
+        new_books = []
+
+        for book in books:
+            title, _, _, _ = book.split(",")
+            if title == title_to_remove:
+                found_book = True
+            else:
+                new_books.append(book)
+
+        if not found_book:
+            print(f"There is no book in the library with the name of {title_to_remove}!")
+        else:
+            with open(self.file_path, 'w', encoding='utf-8') as file:
+                file.writelines('\n'.join(new_books))
+            print(f"Book with title '{title_to_remove}' is removed successfully!")
+
+
+if __name__ == "__main__":
+    lib = Library()
+
+
+    while True:
+
+
+        print("\n*** MENU ***")
+        print("1) List Book(s)")
+        print("2) Add Book")
+        print("3) Remove Book")
+        print("4) Quit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            lib.list_books()
+        elif choice == '2':
+            lib.add_book()
+        elif choice == '3':
+            lib.remove_book()
+        elif choice == '4':
+            print("Quitting the program. BB")
+            break
+        else:
+            print("Invalid choice. Try again.")
